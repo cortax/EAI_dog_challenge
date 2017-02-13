@@ -1,1 +1,1 @@
-# EAI_dog_challenge
+# Classifying Stanford dogs breeds with something
