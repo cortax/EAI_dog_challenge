@@ -21,7 +21,8 @@ The training approach we use here relies on learning rate ladder. Basically, a l
 The network as been trained once and learning parameters were not fined-tuned. At this point, we should interpret the results and make modifications to the learning process to improve performance. We use the accuracy as our metric to determine the quality of a model, eventhough the optimization is done over a cross entropy loss. State-of-the-art performance on this dataset currently reach ~80-85% accuracy. The learned model does not achieve such good performance, but still performs quite well. The results are not averaged and taken from a single run. The dataset splitting (85-15) is also deterministic. 
 
 Here is 
-
+![accuracies](https://cloud.githubusercontent.com/assets/6197868/22986366/46267b04-f379-11e6-8fc4-5febac647bc0.png)
+![losses](https://cloud.githubusercontent.com/assets/6197868/22986367/47620a24-f379-11e6-8be2-9e378e756ac9.png)
 
 
 
