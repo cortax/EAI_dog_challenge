@@ -16,4 +16,13 @@ The performance on the Stanford dogs dataset were immediate. Some tests were mad
 
 The training approach we use here relies on learning rate ladder. Basically, a learning rate is used for 5 epochs and then divided by 10. The ladder contains 3 steps for a total of 15 epochs. This process is repeated several times by gradually unlocking more and more inception blocks. This is done 3 times, which means a total of 45 learning epochs. This decision of retraining deeper layers is motivated by the availability of a moderate amount of data, diminishing the risk of overfitting. Also, the number of epochs is chosen so that the overall training takes less than 4 hours. 
 
+## Results
+
+The network as been trained once and learning parameters were not fined-tuned. At this point, we should interpret the results and make modifications to the learning process to improve performance. We use the accuracy as our metric to determine the quality of a model, eventhough the optimization is done over a cross entropy loss. State-of-the-art performance on this dataset currently reach ~80-85% accuracy. The learned model does not achieve such good performance, but still performs quite well. The results are not averaged and taken from a single run. The dataset splitting (85-15) is also deterministic. 
+
+Here is 
+
+
+
+
 
