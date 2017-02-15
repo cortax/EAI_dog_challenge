@@ -14,6 +14,6 @@ Using a pretrained network is a safe bet for someone new to Keras, which is my c
 
 The performance on the Stanford dogs dataset were immediate. Some tests were made on training a CNN from scratch, but the performance could hardly get above random within 30 minutes of training. Retraining Inception-v3 using the proposed method in the documentation easily led to 40% validation accuracy only with a new FC layer, this is about half of the state-of-the-art performance in 30 minutes. 
 
-The training approach we use here relies on learning rate ladder. Basically, a learning rate is used for 10 epochs and then divided by 10. The ladder contains 4 steps for a total of 40 epochs. This process is repeated several times by gradually unlocking more and more inception blocks. This is done 3 times, which means a total of 120 learning epochs. This decision of retraining deeper layers is motivated by the availability of a moderate amount of data, diminishing the risk of overfitting. 
+The training approach we use here relies on learning rate ladder. Basically, a learning rate is used for 5 epochs and then divided by 10. The ladder contains 3 steps for a total of 15 epochs. This process is repeated several times by gradually unlocking more and more inception blocks. This is done 3 times, which means a total of 45 learning epochs. This decision of retraining deeper layers is motivated by the availability of a moderate amount of data, diminishing the risk of overfitting. Also, the number of epochs is chosen so that the overall training takes less than 4 hours. 
 
 
