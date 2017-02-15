@@ -1,0 +1,6 @@
+keras
+tensorflow
+Pillow
+h5py
+wget
+numpy
