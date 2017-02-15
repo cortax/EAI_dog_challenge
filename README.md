@@ -8,7 +8,9 @@ The images comes in different sizes with either portrait or landscape aspect. Th
 The second preprocessing involves transforming the training images for data augmentation. We use full rotations of the images and flips in both directions since this won't affect the label on the image. A little zoom is used, however, this could generate erroneous labels if the dog is out of range, but the risk is small here. Also, all images are rescaled to [0,1]. An addition to the preprocessing could be to normalize to the data to 0 mean and 1 std. 
 
 ## Model architecture
-The main constrain of the architecture is the hardware, a GTX 1050 Ti with 4Go of memory, which is an entry-level GPU. This led us to make conservative choice on the architecture. We use the pretrained model Inception-v3 and retrain the model as suggested by Keras. First, the fully connected layers controlling the classification is retrained. Then, we go a little deeper and retrain a few layers below the fully connected layers. 
+The main constrain of the architecture is the hardware, a GTX 1050 Ti with 4Go of memory, which is an entry-level GPU. This led us to make conservative choice on the architecture. We use the pretrained model Inception-v3 and retrain the model as suggested by Keras. First, the fully connected layers controlling the classification is retrained. Then, we go a little deeper and retrain a few layers below the fully connected layers. The input layer remains as is, since we resize all images down to the default image input of Inception-v3, 299x299. 
+
+Using a pretrained Inception-v3 is a safe bet for someone new to Keras, which is my case. The bottom layers of Inception-v3 essentially becomes a feature extractor and we train a classifier using the Inception-v3 feature space. The approach consists to fine-tune the parameters of the network with a small learning rate. 
 
 
 
