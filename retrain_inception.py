@@ -34,16 +34,15 @@ from load_dataset import prepare_dataset
 
 # Download dataset from web, uncompress it and divide into a train and test folder
 prepare_dataset()
-
-# Learning parameters
 train_data_dir = 'Images/train'
 validation_data_dir = 'Images/test'
 
+# Learning parameters
 HEIGHT = 299
 WIDTH = 299
 LEARNING_RATE = 0.0001
 BATCH_SIZE = 8
-NB_EPOCH = 1
+NB_EPOCH = 15
 MOMENTUM = 0.9
 
 # Load pretrained InceptionV3
@@ -61,8 +60,8 @@ for layer in base_model.layers:
 model.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics=['accuracy'])
 
 # Create data generators
-N_train = sum([len(files) for r, d, files in os.walk(os.getcwd() + train_data_dir)])
-N_test = sum([len(files) for r, d, files in os.walk(os.getcwd() + validation_data_dir)])
+N_train = sum([len(files) for r, d, files in os.walk(os.getcwd() + '/' + train_data_dir)])
+N_test = sum([len(files) for r, d, files in os.walk(os.getcwd() + '/' + validation_data_dir)])
 
 train_datagen = ImageDataGenerator(
         rescale=1./255,
@@ -92,7 +91,11 @@ validation_generator = test_datagen.flow_from_directory(
 
 # Preparing callbacks
 tb = TensorBoard(log_dir='./logs', histogram_freq=1, write_graph=True, write_images=False)
-csvlog = CSVLogger('./results.csv', separator=',', append=False)
+try:
+    os.remove('./results.csv')
+except:
+    pass
+csvlog = CSVLogger('./results.csv', separator=',', append=True)
 m_checkpoint = ModelCheckpoint('weights.{epoch:02d}-{val_loss:.2f}.hdf5', monitor='val_loss', verbose=0, save_best_only=False, save_weights_only=False, period=1)
 
 # Training the top layers
@@ -100,7 +103,7 @@ print('Phase 1 - train a new fully connected layer')
 model.fit_generator(
         train_generator,
         samples_per_epoch=N_train,
-        nb_epoch=3,
+        nb_epoch=1,
         callbacks=[tb, csvlog, m_checkpoint],
         validation_data=validation_generator,
         nb_val_samples=N_test)
@@ -115,7 +118,7 @@ for layer in model.layers[172:]:
 from keras.optimizers import SGD
 model.compile(optimizer=SGD(lr=LEARNING_RATE, momentum=MOMENTUM), loss='categorical_crossentropy', metrics=['accuracy'])
 
-
+# defining learning rate ladder
 def f_sched(epoch):
     lr_decay = 0.1
     lr_schedule = [5, 10]
@@ -141,7 +144,7 @@ for layer in model.layers[158:]:
 from keras.optimizers import SGD
 model.compile(optimizer=SGD(lr=LEARNING_RATE, momentum=MOMENTUM), loss='categorical_crossentropy', metrics=['accuracy'])
 
-
+# REdefining learning rate ladder
 def f_sched(epoch):
     lr_decay = 0.1
     lr_schedule = [5, 10]
@@ -167,7 +170,7 @@ for layer in model.layers[136:]:
 from keras.optimizers import SGD
 model.compile(optimizer=SGD(lr=LEARNING_RATE, momentum=MOMENTUM), loss='categorical_crossentropy', metrics=['accuracy'])
 
-
+# REdefining learning rate ladder
 def f_sched(epoch):
     lr_decay = 0.1
     lr_schedule = [5, 10]
