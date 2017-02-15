@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+# <nbformat>3.0</nbformat>
+
+# <codecell>
+
 import keras
 from keras.preprocessing.image import ImageDataGenerator, load_img, list_pictures, array_to_img, img_to_array
 from keras.datasets import cifar10
@@ -25,17 +30,9 @@ import PIL as pil_image
 import glob
 import numpy as np
 from math import floor
+import h5py
 
-
-
-HEIGHT = 299
-WIDTH = 299
-CHAN = 3
-WEIGHT_DECAY = 5e-4
-LEARNING_RATE = 1
-BATCH_SIZE = 256
-NB_EPOCH = 200
-MOMENTUM = 0.99
+# <codecell>
 
 if os.path.isdir("./Images"):
     print('Image folder found')
@@ -57,7 +54,8 @@ os.makedirs(cwd + '/Images/test', exist_ok=True)
 
 for d in [x[0] for x in os.walk('./Images/')]:
     basedir = os.path.split(d)
-    if not basedir[1] == '' and not basedir[1] == 'train' and not basedir[1] == 'test' :
+    if not basedir[1] == '' and not basedir[1] == 'train' and not basedir[1] == 'test' and basedir[0] == './Images':
+        print(basedir[1])
         L = glob.glob(str(d) + '/*.jpg')
         lastfile = floor(0.85*len(L))
         for pathname in L[0:lastfile]:
@@ -78,11 +76,66 @@ for d in [x[0] for x in os.walk('./Images/')]:
             os.rename(oldpathname, newpathname)
         os.rmdir(cwd + '/Images/' + basedir[1])
 
-N_train = sum([len(files) for r, d, files in os.walk(cwd + '/Images/train')])
-N_test = sum([len(files) for r, d, files in os.walk(cwd + '/Images/test')])
+# <codecell>
 
-train_datagen = ImageDataGenerator(featurewise_center=True,
-        featurewise_std_normalization=True,
+
+# <codecell>
+
+train_data_dir = 'Images/train'
+validation_data_dir = 'Images/test'
+
+HEIGHT = 300
+WIDTH = 300
+CHAN = 3
+WEIGHT_DECAY = 5e-4
+LEARNING_RATE = 2
+BATCH_SIZE = 4
+NB_EPOCH = 10
+MOMENTUM = 0.99
+
+N_train = sum([len(files) for r, d, files in os.walk(os.getcwd() + '/Images/train')])
+N_test = sum([len(files) for r, d, files in os.walk(os.getcwd() + '/Images/test')])
+
+# <codecell>
+
+
+# <codecell>
+
+model = Sequential()
+
+model.add(Convolution2D(96, 3, 3, init='he_normal', W_regularizer=l2(WEIGHT_DECAY), bias=True, input_shape=(WIDTH, HEIGHT, 3), border_mode='same'))
+model.add(Activation('relu'))
+model.add(MaxPooling2D(pool_size=(2, 2), strides=None, border_mode='valid'))
+model.add(Dropout(0.5))
+
+model.add(Convolution2D(64, 3, 3, init='he_normal', W_regularizer=l2(WEIGHT_DECAY), bias=False, input_shape=(WIDTH, HEIGHT, 3), border_mode='same'))
+model.add(BatchNormalization(epsilon=0.001, mode=0, axis=3, momentum=MOMENTUM, weights=None, beta_init='zero', gamma_init='one', gamma_regularizer=l2(WEIGHT_DECAY), beta_regularizer=l2(WEIGHT_DECAY)))
+model.add(Activation('relu'))
+model.add(MaxPooling2D(pool_size=(2, 2), strides=None, border_mode='valid'))
+model.add(Dropout(0.5))
+
+model.add(Convolution2D(32, 3, 3, init='he_normal', W_regularizer=l2(WEIGHT_DECAY), bias=False, input_shape=(WIDTH, HEIGHT, 3), border_mode='same'))
+model.add(BatchNormalization(epsilon=0.001, mode=0, axis=3, momentum=MOMENTUM, weights=None, beta_init='zero', gamma_init='one', gamma_regularizer=l2(WEIGHT_DECAY), beta_regularizer=l2(WEIGHT_DECAY)))
+model.add(Activation('relu'))
+model.add(MaxPooling2D(pool_size=(2, 2), strides=None, border_mode='valid'))
+model.add(Dropout(0.5))
+
+model.add(Flatten())
+model.add(Dense(output_dim=512, init='glorot_uniform', W_regularizer=l2(WEIGHT_DECAY), bias=False))
+model.add(BatchNormalization(epsilon=0.001, mode=0, momentum=MOMENTUM, weights=None, beta_init='zero', gamma_init='one', gamma_regularizer=l2(WEIGHT_DECAY), beta_regularizer=l2(WEIGHT_DECAY)))
+model.add(Activation('relu'))
+model.add(Dropout(0.5))
+model.add(Dense(output_dim=120, init='glorot_uniform', W_regularizer=l2(WEIGHT_DECAY), bias=True))
+model.add(Activation('softmax'))
+
+sgd = keras.optimizers.SGD(lr=LEARNING_RATE, momentum=MOMENTUM, decay=0.0, nesterov=True)
+model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
+
+print(model.summary())
+
+# <codecell>
+
+train_datagen = ImageDataGenerator(
         rescale=1./255,
         zoom_range=0.2,
         rotation_range=5,
@@ -93,64 +146,44 @@ train_datagen = ImageDataGenerator(featurewise_center=True,
         horizontal_flip=True,
         vertical_flip=True)
 
-test_datagen = ImageDataGenerator(featurewise_center=True,
-        featurewise_std_normalization=True,
-        rescale=1./255)
+test_datagen = ImageDataGenerator(rescale=1./255)
 
 train_generator = train_datagen.flow_from_directory(
-        'Images/train',
-        target_size=(HEIGHT, WIDTH),
+        train_data_dir,
+        target_size=(WIDTH, HEIGHT),
         batch_size=BATCH_SIZE,
         class_mode='categorical')
 
-test_generator = test_datagen.flow_from_directory(
-        'Images/test',
-        target_size=(HEIGHT, WIDTH),
+validation_generator = test_datagen.flow_from_directory(
+        validation_data_dir,
+        target_size=(WIDTH, HEIGHT),
         batch_size=BATCH_SIZE,
         class_mode='categorical')
 
-model = Sequential()
-model.add(Convolution2D(64, 3, 3, init='he_normal', border_mode='same', input_shape=(HEIGHT, WIDTH, CHAN), W_regularizer=l2(WEIGHT_DECAY), bias=False))
-model.add(BatchNormalization(epsilon=0.001, mode=0, axis=3, momentum=MOMENTUM, weights=None, beta_init='zero', gamma_init='one', gamma_regularizer=l2(WEIGHT_DECAY), beta_regularizer=l2(WEIGHT_DECAY)))
-model.add(Activation('relu'))
-model.add(MaxPooling2D(pool_size=(2, 2), strides=None, border_mode='valid'))
 
-model.add(Convolution2D(64, 3, 3, init='he_normal', border_mode='same', W_regularizer=l2(WEIGHT_DECAY), bias=False))
-model.add(BatchNormalization(epsilon=0.001, mode=0, axis=3, momentum=MOMENTUM, weights=None, beta_init='zero', gamma_init='one', gamma_regularizer=l2(WEIGHT_DECAY), beta_regularizer=l2(WEIGHT_DECAY)))
-model.add(Activation('relu'))
-model.add(MaxPooling2D(pool_size=(2, 2), strides=None, border_mode='valid'))
-
-model.add(Convolution2D(64, 3, 3, init='he_normal', border_mode='same', W_regularizer=l2(WEIGHT_DECAY), bias=False))
-model.add(BatchNormalization(epsilon=0.001, mode=0, axis=3, momentum=MOMENTUM, weights=None, beta_init='zero', gamma_init='one', gamma_regularizer=l2(WEIGHT_DECAY), beta_regularizer=l2(WEIGHT_DECAY)))
-model.add(Activation('relu'))
-model.add(MaxPooling2D(pool_size=(2, 2), strides=None, border_mode='valid'))
-
-model.add(Flatten())
-model.add(Dense(output_dim=512, init='glorot_uniform', W_regularizer=l2(WEIGHT_DECAY), bias=True))
-#model.add(BatchNormalization(epsilon=0.001, mode=0, axis=3, momentum=0.99, weights=None, beta_init='zero', gamma_init='one', gamma_regularizer=l2(WEIGHT_DECAY), beta_regularizer=l2(WEIGHT_DECAY)))
-model.add(Activation('relu'))
-model.add(Dropout(0.5))
-
-model.add(Dense(output_dim=120, init='glorot_uniform', W_regularizer=l2(WEIGHT_DECAY), bias=True))
-model.add(Activation('softmax'))
-
-sgd = keras.optimizers.SGD(lr=LEARNING_RATE, momentum=MOMENTUM, decay=0.0, nesterov=True)
-model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
 
 tb = TensorBoard(log_dir='./logs', histogram_freq=1, write_graph=True, write_images=False)
 csvlog = CSVLogger('./results.csv', separator=',', append=False)
 m_checkpoint = ModelCheckpoint('weights.{epoch:02d}-{val_loss:.2f}.hdf5', monitor='val_loss', verbose=0, save_best_only=False, save_weights_only=False, period=1)
+
 def f_sched(epoch):
     lr_decay = 0.1
     lr_schedule = [30, 70, 200]
-    return learning_rate * lr_decay**(np.array(lr_schedule) <= epoch).sum()
-
+    return LEARNING_RATE * lr_decay**(np.array(lr_schedule) <= epoch).sum()
 
 lrs = LearningRateScheduler(f_sched)
 
+model.fit_generator(
+        train_generator,
+        samples_per_epoch=N_train,
+        nb_epoch=NB_EPOCH,
+        callbacks=[tb, lrs, csvlog, m_checkpoint],
+        validation_data=validation_generator,
+nb_val_samples=N_test)
 
-model.fit_generator(train_generator,
-                    samples_per_epoch=N_train, nb_epoch=NB_EPOCH, verbose=1, callbacks=[tb, lrs, csvlog, m_checkpoint],
-                    validation_data=test_generator,
-                    nb_val_samples=N_test, max_q_size=10, nb_worker=2, pickle_safe=True,
-                    initial_epoch=0)
+# <codecell>
+
+
+# <codecell>
+
+
