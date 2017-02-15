@@ -26,4 +26,8 @@ The following graphs show the results obtained on the single optimization run.
 
 The first observation is that a single epoch of training on the fully connected layer is enough to achieve a good accuracy. This is due to the pretraining of the network. We also see the 3 phases of training in both the losses and accuracies graphs, where more layers are unlocked for training each time. The training loss decreases as expected. The test loss is noisier, but still has a downward evolution. There is a difference between the training and test losses. This might be due to the fact that the training images distribution is not exactly the same as the testing images distribution, since no transformations are applied on test images. The same reasonning applies for the accuracy. The test accuracy is better than the training accuracy. One explanation is that the training images are harder and more complex to classify than the straight up test images. 
 
+The evolution of the test accuracy start from 50% and climbs up to 68%. We also observe that the training accuracy continues to improve while the test accuracy improvements seems to slow down. Unlocking even deeper layers at this point might be risky and make the model prone to overfitting. 
+
+Overall, the learning procedure based on iteratively unlocking deeper layers and retraining them with learning rate ladders seems to work well on this dataset based on the accuracy metric. The not so good loss of testing vs training means that the prediction are not confident ones. At this point, we could retrain the the fully connected layers to make the prediction sharper. Adding more nodes or another layer to the fully connected part might help getting stronger responses for unique classes. 
+
 
