@@ -24,6 +24,6 @@ The following graphs show the results obtained on the single optimization run.
 ![accuracies](https://cloud.githubusercontent.com/assets/6197868/22986366/46267b04-f379-11e6-8fc4-5febac647bc0.png)
 ![losses](https://cloud.githubusercontent.com/assets/6197868/22986367/47620a24-f379-11e6-8be2-9e378e756ac9.png)
 
-
+The first observation is that a single epoch of training on the fully connected layer is enough to achieve a good accuracy. This is due to the pretraining of the network. We also see the 3 phases of training in both the losses and accuracies graphs, where more layers are unlocked for training each time. The training loss decreases as expected. The test loss is noisier, but still has a downward evolution. There is a difference between the training and test losses. This might be due to the fact that the training images distribution is not exactly the same as the testing images distribution, since no transformations are applied on test images. The same reasonning applies for the accuracy. The test accuracy is better than the training accuracy. One explanation is that the training images are harder and more complex to classify than the straight up test images. 
 
 
