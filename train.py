@@ -88,10 +88,11 @@ HEIGHT = 300
 WIDTH = 300
 CHAN = 3
 WEIGHT_DECAY = 5e-4
-LEARNING_RATE = 2
+LEARNING_RATE = 0.1
 BATCH_SIZE = 4
 NB_EPOCH = 10
-MOMENTUM = 0.99
+MOMENTUM_OPT = 0.99
+MOMENTUM_BN = 0.99
 
 N_train = sum([len(files) for r, d, files in os.walk(os.getcwd() + '/Images/train')])
 N_test = sum([len(files) for r, d, files in os.walk(os.getcwd() + '/Images/test')])
@@ -103,32 +104,30 @@ N_test = sum([len(files) for r, d, files in os.walk(os.getcwd() + '/Images/test'
 
 model = Sequential()
 
-model.add(Convolution2D(96, 3, 3, init='he_normal', W_regularizer=l2(WEIGHT_DECAY), bias=True, input_shape=(WIDTH, HEIGHT, 3), border_mode='same'))
+model.add(Convolution2D(32, 3, 3, init='he_normal', W_regularizer=l2(WEIGHT_DECAY), bias=False, input_shape=(WIDTH, HEIGHT, 3), border_mode='same'))
+model.add(BatchNormalization(epsilon=0.001, mode=0, axis=3, momentum=MOMENTUM_BN, weights=None, beta_init='zero', gamma_init='one', gamma_regularizer=l2(WEIGHT_DECAY), beta_regularizer=l2(WEIGHT_DECAY)))
 model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size=(2, 2), strides=None, border_mode='valid'))
-model.add(Dropout(0.5))
 
 model.add(Convolution2D(64, 3, 3, init='he_normal', W_regularizer=l2(WEIGHT_DECAY), bias=False, input_shape=(WIDTH, HEIGHT, 3), border_mode='same'))
-model.add(BatchNormalization(epsilon=0.001, mode=0, axis=3, momentum=MOMENTUM, weights=None, beta_init='zero', gamma_init='one', gamma_regularizer=l2(WEIGHT_DECAY), beta_regularizer=l2(WEIGHT_DECAY)))
+model.add(BatchNormalization(epsilon=0.001, mode=0, axis=3, momentum=MOMENTUM_BN, weights=None, beta_init='zero', gamma_init='one', gamma_regularizer=l2(WEIGHT_DECAY), beta_regularizer=l2(WEIGHT_DECAY)))
 model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size=(2, 2), strides=None, border_mode='valid'))
-model.add(Dropout(0.5))
 
-model.add(Convolution2D(32, 3, 3, init='he_normal', W_regularizer=l2(WEIGHT_DECAY), bias=False, input_shape=(WIDTH, HEIGHT, 3), border_mode='same'))
-model.add(BatchNormalization(epsilon=0.001, mode=0, axis=3, momentum=MOMENTUM, weights=None, beta_init='zero', gamma_init='one', gamma_regularizer=l2(WEIGHT_DECAY), beta_regularizer=l2(WEIGHT_DECAY)))
+model.add(Convolution2D(128, 3, 3, init='he_normal', W_regularizer=l2(WEIGHT_DECAY), bias=False, input_shape=(WIDTH, HEIGHT, 3), border_mode='same'))
+model.add(BatchNormalization(epsilon=0.001, mode=0, axis=3, momentum=MOMENTUM_BN, weights=None, beta_init='zero', gamma_init='one', gamma_regularizer=l2(WEIGHT_DECAY), beta_regularizer=l2(WEIGHT_DECAY)))
 model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size=(2, 2), strides=None, border_mode='valid'))
-model.add(Dropout(0.5))
 
 model.add(Flatten())
 model.add(Dense(output_dim=512, init='glorot_uniform', W_regularizer=l2(WEIGHT_DECAY), bias=False))
-model.add(BatchNormalization(epsilon=0.001, mode=0, momentum=MOMENTUM, weights=None, beta_init='zero', gamma_init='one', gamma_regularizer=l2(WEIGHT_DECAY), beta_regularizer=l2(WEIGHT_DECAY)))
+model.add(BatchNormalization(epsilon=0.001, mode=0, momentum=MOMENTUM_BN, weights=None, beta_init='zero', gamma_init='one', gamma_regularizer=l2(WEIGHT_DECAY), beta_regularizer=l2(WEIGHT_DECAY)))
 model.add(Activation('relu'))
 model.add(Dropout(0.5))
 model.add(Dense(output_dim=120, init='glorot_uniform', W_regularizer=l2(WEIGHT_DECAY), bias=True))
 model.add(Activation('softmax'))
 
-sgd = keras.optimizers.SGD(lr=LEARNING_RATE, momentum=MOMENTUM, decay=0.0, nesterov=True)
+sgd = keras.optimizers.SGD(lr=LEARNING_RATE, momentum=MOMENTUM_OPT, decay=0.0, nesterov=True)
 model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
 
 print(model.summary())
